@@ -9,24 +9,6 @@ define(
   function(_, BaseAdapter, SandboxesAdapter, Plugin, Plugins) {
     "use strict";
 
-	function getParams() {
-		if (!window.location.search) {
-			return({}); // return empty object
-		}
-		var parms = {};
-		var temp;
-		var items = window.location.search.slice(1).split("&"); // remove leading ? and split
-		for (var i = 0; i < items.length; i++) {
-			temp = items[i].split("=");
-			if (temp[0]) {
-				if (temp.length < 2) {
-					temp.push("");
-				}
-				parms[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
-			}
-		}
-		return(parms);
-	}
 
     /**
     * Adapter for retrieving plugins from the server.
@@ -98,6 +80,7 @@ define(
     };
 
     _.extend(PluginsAdapter.prototype, new BaseAdapter(), {
+
       /**
       * Finds global plugin asynchronously.
       *
@@ -188,7 +171,7 @@ define(
       fill: function() {
         var deferred = $.Deferred();
 
-        this.fetch("data/heka_report.json?proxyto=" + getParams()["proxyto"], function(response) {
+        this.fetch("data/heka_report.json?proxyto=" + this.getParams()["proxyto"] + "&fm=.json", function(response) {
           this.parseArrayIntoCollection(response.globals, this.globals, "Global");
           this.parseArrayIntoCollection(response.inputs, this.inputs, "Input");
 

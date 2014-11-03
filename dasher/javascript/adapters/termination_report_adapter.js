@@ -35,7 +35,7 @@ define(
       * @method fill
       */
       fill: function() {
-        this.fetch("data/heka_sandbox_termination.tsv", function(response) {
+        this.fetch("data/heka_sandbox_termination.tsv?proxyto=" + this.getParams()["proxyto"], function(response) {
           var terminationReport = TerminationReport.parse(response);
 
           this.terminationReportCollection.set(terminationReport.data);
