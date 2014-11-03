@@ -188,7 +188,7 @@ define(
       fill: function() {
         var deferred = $.Deferred();
 
-        this.fetch("data/heka_report.json?host=" + getParams()["host"], function(response) {
+        this.fetch("data/heka_report.json?proxyto=" + getParams()["proxyto"], function(response) {
           this.parseArrayIntoCollection(response.globals, this.globals, "Global");
           this.parseArrayIntoCollection(response.inputs, this.inputs, "Input");
 
