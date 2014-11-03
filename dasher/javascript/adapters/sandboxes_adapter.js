@@ -67,7 +67,7 @@ define(
       fill: function(enablePolling) {
         var deferred = $.Deferred();
 
-        this.fetch("data/sandboxes.json" + this.getParams()["proxyto"] + "&fm=.json", function(response) {
+        this.fetch("data/sandboxes.json?proxyto=" + this.getParams()["proxyto"] + "&fm=.json", function(response) {
           this.parseArrayIntoCollection(response.sandboxes, this.sandboxes);
 
           deferred.resolve(this.sandboxes);
