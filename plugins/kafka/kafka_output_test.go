@@ -15,7 +15,7 @@
 package kafka
 
 import (
-	"github.com/Shopify/sarama"
+	"github.com/imgix/sarama"
 	"github.com/mozilla-services/heka/message"
 	. "github.com/mozilla-services/heka/pipeline"
 	pipeline_ts "github.com/mozilla-services/heka/pipeline/testsupport"

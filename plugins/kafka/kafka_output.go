@@ -17,7 +17,7 @@ package kafka
 import (
 	"errors"
 	"fmt"
-	"github.com/Shopify/sarama"
+	"github.com/imgix/sarama"
 	"github.com/mozilla-services/heka/message"
 	"github.com/mozilla-services/heka/pipeline"
 	"os"

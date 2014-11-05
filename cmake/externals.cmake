@@ -155,7 +155,7 @@ git_clone(https://github.com/crankycoder/xmlpath 670b185b686fd11aa115291fb2f6dc3
 git_clone(https://github.com/thoj/go-ircevent 90dc7f966b95d133f1c65531c6959b52effd5e40)
 
 hg_clone(https://code.google.com/p/snappy-go default)
-git_clone(https://github.com/Shopify/sarama ab8518c05fd3775bdbf06c97d97389fe8af2dfef)
+git_clone(https://github.com/imgix/sarama fce9d18026e8f838aa719ee0a00a718491206dec)
 add_dependencies(sarama snappy-go)
 
 if (INCLUDE_GEOIP)
