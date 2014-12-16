@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
+	"sync"
 )
 
 func HttpListenInputSpec(c gs.Context) {
@@ -44,17 +46,16 @@ func HttpListenInputSpec(c gs.Context) {
 	ith.PackSupply = make(chan *PipelinePack, 1)
 
 	config := httpListenInput.ConfigStruct().(*HttpListenInputConfig)
-	config.Decoder = "PayloadJsonDecoder"
-
-	mockDecoderRunner := pipelinemock.NewMockDecoderRunner(ctrl)
-
-	dRunnerInChan := make(chan *PipelinePack, 1)
 
 	c.Specify("A HttpListenInput", func() {
-		mockDecoderRunner.EXPECT().InChan().Return(dRunnerInChan)
 		ith.MockInputRunner.EXPECT().InChan().Return(ith.PackSupply)
-		ith.MockInputRunner.EXPECT().Name().Return("HttpListenInput").Times(2)
-		ith.MockHelper.EXPECT().DecoderRunner("PayloadJsonDecoder", "HttpListenInput-PayloadJsonDecoder").Return(mockDecoderRunner, true)
+		ith.MockInputRunner.EXPECT().Name().Return("HttpListenInput")
+		var deliverWg sync.WaitGroup
+		deliverWg.Add(1)
+		deliverCall := ith.MockInputRunner.EXPECT().Deliver(ith.Pack)
+		deliverCall.Do(func(pack *PipelinePack) {
+			deliverWg.Done()
+		})
 		ith.MockHelper.EXPECT().PipelineConfig().Return(pConfig)
 
 		startedChan := make(chan bool, 1)
@@ -80,8 +81,8 @@ func HttpListenInputSpec(c gs.Context) {
 			resp.Body.Close()
 			c.Assume(resp.StatusCode, gs.Equals, 200)
 
-			pack := <-dRunnerInChan
-			fieldValue, ok := pack.Message.GetFieldValue("test")
+			deliverWg.Wait()
+			fieldValue, ok := ith.Pack.Message.GetFieldValue("test")
 			c.Assume(ok, gs.IsTrue)
 			c.Expect(fieldValue, gs.Equals, "Hello World")
 		})
@@ -102,7 +103,7 @@ func HttpListenInputSpec(c gs.Context) {
 			c.Assume(err, gs.IsNil)
 			resp.Body.Close()
 			c.Assume(resp.StatusCode, gs.Equals, 200)
-			<-dRunnerInChan
+			deliverWg.Wait()
 
 			// Verify headers are there
 			eq := reflect.DeepEqual(resp.Header["One"], config.Headers["One"])
@@ -110,6 +111,43 @@ func HttpListenInputSpec(c gs.Context) {
 			eq = reflect.DeepEqual(resp.Header["Four"], config.Headers["Four"])
 			c.Expect(eq, gs.IsTrue)
 
+		})
+
+		c.Specify("Unescape the request body", func() {
+			err := httpListenInput.Init(config)
+			ts.Config = httpListenInput.server
+			c.Assume(err, gs.IsNil)
+
+			startInput()
+			ith.PackSupply <- ith.Pack
+			<-startedChan
+			resp, err := http.Post(ts.URL, "text/plain", strings.NewReader("1+2"))
+			c.Assume(err, gs.IsNil)
+			resp.Body.Close()
+			c.Assume(resp.StatusCode, gs.Equals, 200)
+			deliverWg.Wait()
+
+			payload := ith.Pack.Message.GetPayload()
+			c.Expect(payload, gs.Equals, "1 2")
+		})
+
+		c.Specify("Do not unescape the request body", func() {
+			config.UnescapeBody = false
+			err := httpListenInput.Init(config)
+			ts.Config = httpListenInput.server
+			c.Assume(err, gs.IsNil)
+
+			startInput()
+			ith.PackSupply <- ith.Pack
+			<-startedChan
+			resp, err := http.Post(ts.URL, "text/plain", strings.NewReader("1+2"))
+			c.Assume(err, gs.IsNil)
+			resp.Body.Close()
+			c.Assume(resp.StatusCode, gs.Equals, 200)
+			deliverWg.Wait()
+
+			payload := ith.Pack.Message.GetPayload()
+			c.Expect(payload, gs.Equals, "1+2")
 		})
 
 		ts.Close()

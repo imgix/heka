@@ -9,8 +9,22 @@ Backwards Incompatibilities
   instantiate and manage the lifecycles of other embedded plugins, e.g.
   MultiDecoder, ProcessDirectoryInput, SandboxManagerFilter.
 
+* All inputs now support `decoder`, `synchronous_decode`, and
+  `send_decode_failures` config options, automatically extracted by Heka's
+  config system.
+
+* InputRunner interface has added a `Deliver` method, which handles decoding
+  and injection to the router according to the specifications of the
+  `decoder`, `synchronous_decode`, and send_decode_failure` config options,
+  *except* in cases when an input implements a `SetCommonInputConfig` method.
+  If that is implemented, the InputRunner will pass in a struct containing the
+  specified decoding options, and the input will be expected to handle
+  decoding accordingly.
+
 Bug Handling
 ------------
+
+* Reset header when discarding valid but oversized messages (#1221).
 
 * Prevent the protobuf stream encoder from creating messages over
   MAX_MESSAGE_SIZE (#1204).
@@ -37,7 +51,16 @@ Features
 * Slightly improve error output in ElasticSearch plugin.
 
 * Added support for HTTP authentication to ElasticSearchOutput.
- 
+
+* TcpOutput's disk buffering now supports specification of a max buffer size
+  and an action to take if the max size is reached, from 'shutdown', 'drop',
+  or 'block' (#1110).
+
+* Added `unescape_body` option to HttpListenInput to allow users to turn off
+  unescaping of the HTTP request body (#1124).
+
+* Added `send_interval` setting to SmtpOutput.
+
 0.8.1 (2014-MM-DD)
 ==================
 
@@ -54,6 +77,8 @@ Bug Handling
 
 * AMQPOutput now recycles packs even when a publish error causes the output to
   exit / restart (#1178).
+
+* Fixed HttpOutput TLS section parsing (#1163).
 
 0.8.0 (2014-10-29)
 ==================

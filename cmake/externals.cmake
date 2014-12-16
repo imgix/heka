@@ -19,7 +19,7 @@ if(INCLUDE_SANDBOX)
     externalproject_add(
         ${SANDBOX_PACKAGE}
         GIT_REPOSITORY https://github.com/davidbirdsong/lua_sandbox.git
-        GIT_TAG 52c464af07b3971d41d0492f657e5179297fb54e
+        GIT_TAG 18edf6eac680f0e959a9de9e3d59ae4d578cd7b3
         CMAKE_ARGS ${SANDBOX_ARGS}
         INSTALL_DIR ${PROJECT_PATH}
     )
